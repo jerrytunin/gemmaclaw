@@ -1,0 +1,4 @@
+## 2025-02-12 - Critical Command Injection Prevention in CLI Workflows
+**Vulnerability:** Use of `execSync` with string interpolation for executing CLI commands (like `git` or `gh`). This pattern allows for command injection if variables within the interpolated string can be manipulated.
+**Learning:** In a codebase that heavily interacts with external CLIs, `execSync` is frequently reached for due to ease of use. However, shell escaping strategies within `execSync` can be flaky, and the shell interpretation itself is the root cause of the vulnerability.
+**Prevention:** Always use `execFileSync` or `spawnSync` from `node:child_process` and pass arguments as an array. This directly invokes the executable without an intermediate shell, inherently mitigating command injection risks while maintaining identical functionality.
