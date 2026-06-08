@@ -1,0 +1,4 @@
+## 2024-05-18 - Prevent Command Injection in `gh pr create`
+**Vulnerability:** The codebase was passing user-controlled arguments, including fields dynamically generated like the PR title and body, to `execSync` via string interpolation (`execSync(\`gh pr create ... \${prTitle}\`)`). This created a command injection vulnerability where malicious input in those fields could execute arbitrary shell commands.
+**Learning:** It is critical to ensure that when external commands like `gh` are invoked, string interpolation is never used for dynamic arguments, because it allows unintended shell expansions and execution.
+**Prevention:** Use `execFileSync` (or `spawnSync`) and pass arguments as an array instead of passing a single string to `execSync`. This bypasses the shell and treats arguments literally, mitigating command injection risks.
