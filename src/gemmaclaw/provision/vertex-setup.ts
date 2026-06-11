@@ -14,7 +14,7 @@
  *   gemmaclaw setup --vertex --project my-project --region us-central1
  */
 
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline/promises";
@@ -264,11 +264,18 @@ export async function interactiveVertexSetup(opts?: {
   if (useServiceAccount) {
     // Service accounts: use gcloud with the key file, or exchange JWT manually
     try {
+      const saContent = fs.readFileSync(saKeyPath, "utf-8");
+      const saData = JSON.parse(saContent);
+      const saEmail = saData.client_email;
+      if (!saEmail) {
+        throw new Error("client_email not found in service account key file");
+      }
       accessToken =
-        execSync(
-          `gcloud auth print-access-token --impersonate-service-account=$(python3 -c "import json; print(json.load(open('${saKeyPath}'))['client_email'])")`,
-          { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"], timeout: 15_000 },
-        ).trim() || null;
+        execFileSync("gcloud", ["auth", "print-access-token", `--impersonate-service-account=${saEmail}`], {
+          encoding: "utf-8",
+          stdio: ["pipe", "pipe", "pipe"],
+          timeout: 15_000,
+        }).trim() || null;
     } catch {
       // Fallback: try plain gcloud which might already be authed with the SA
       accessToken = getGcloudAccessToken();
