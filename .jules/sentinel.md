@@ -1,0 +1,4 @@
+## 2024-03-24 - Command Injection via execSync
+**Vulnerability:** The `submit-benchmark.ts` script used `execSync` to run `gh` and `git` commands with string interpolation, allowing potential command injection if input parameters were maliciously crafted.
+**Learning:** It's common to see developers using `execSync` for its simplicity when executing shell commands, but this approach inherits shell features and is dangerous when parameters are mixed directly into the string.
+**Prevention:** Always use `execFileSync` or `spawnSync` with an array of arguments to execute binaries directly, bypassing the shell and avoiding the need for complex escaping or quoting.
