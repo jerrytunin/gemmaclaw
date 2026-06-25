@@ -1,0 +1,4 @@
+## 2025-02-14 - Fix Command Injection in Benchmark Upload
+**Vulnerability:** Command injection in `src/gemmaclaw/benchmark-kit/upload.ts` and `src/commands/submit-benchmark.ts` where unsanitized user inputs (e.g. `targetRepo`, `model.name`) were passed to `execSync` with string interpolation (e.g. `execSync(\`gh repo fork \${targetRepo}\`)`).
+**Learning:** External variables like `targetRepo`, derived from user arguments, can introduce shell evaluation vectors if a shell is spawned when executing strings. The application is meant to be run in diverse environments where users have full control over arguments.
+**Prevention:** Always use `execFileSync` (or `spawnSync`) passing the command arguments as an array instead of passing a concatenated string to `execSync`. This bypasses shell evaluation entirely and treats variables as plain arguments.
