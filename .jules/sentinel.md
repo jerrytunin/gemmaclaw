@@ -1,0 +1,4 @@
+## 2024-06-27 - Command Injection via JSON.stringify in Double Quotes
+**Vulnerability:** Shell execution tools like `execSync` evaluating user input formatted with `JSON.stringify` within double quotes (`"`). Since Unix shells still evaluate command substitutions (e.g. `$(...)` and backticks) even inside double-quoted strings, wrapping user input with `JSON.stringify` does not provide safe parameter passing and leads to Command Injection risks.
+**Learning:** `JSON.stringify()` creates a string safely enclosed with literal double quotes, but it is not meant to sanitize or escape arguments for shell execution (`sh -c` behavior).
+**Prevention:** Always use `execFileSync` or `spawnSync` and pass arguments as an explicit array rather than a single interpolated command string. These methods map directly to `execve` (or similar syscalls) and do not invoke a shell, completely bypassing shell evaluation of the parameters.

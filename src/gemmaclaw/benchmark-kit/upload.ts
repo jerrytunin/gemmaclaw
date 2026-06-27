@@ -9,7 +9,7 @@
  *      and opens a PR via the `gh` CLI.
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -254,8 +254,20 @@ export async function uploadResult(
       "All private identifiers have been stripped.",
     ].join("\n");
 
-    const prUrl = execSync(
-      `gh pr create --repo ${opts.targetRepo} --head "${ghUser}:${branchName}" --title "benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}" --body "${prBody.replace(/"/g, '\\"')}"`,
+    const prUrl = execFileSync(
+      "gh",
+      [
+        "pr",
+        "create",
+        "--repo",
+        opts.targetRepo,
+        "--head",
+        `${ghUser}:${branchName}`,
+        "--title",
+        `benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}`,
+        "--body",
+        prBody,
+      ],
       { cwd: tmpDir, encoding: "utf8", timeout: 30_000 },
     ).trim();
 
