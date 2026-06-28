@@ -1,0 +1,4 @@
+## 2026-06-28 - Avoid execSync with String Interpolation
+**Vulnerability:** Command Injection. The use of `execSync` with string interpolated inputs allows arbitrary commands to be executed if user inputs or environment variables containing shell meta-characters are injected.
+**Learning:** Using `execSync` requires a shell by default, which parses the string for special characters. For calls like `gh` and `git` that process variable inputs (like branches or strings derived from inputs), it is insecure and vulnerable. While `spawnSync` is a safe alternative, it does not throw on command failure. The correct mitigation here that preserves the original behavior is to use `execFileSync`.
+**Prevention:** Use `execFileSync` along with an explicit arguments array instead of formatting a single command string. Ensure the arguments are handled safely and passed directly to the binary.
