@@ -1,0 +1,4 @@
+## 2025-05-15 - Command Injection Risk in Shell Execution
+**Vulnerability:** Found multiple instances where `execSync` was used with string interpolation (e.g., ``execSync(`gh repo fork ${targetRepo}`)``), introducing a command injection vulnerability where untrusted inputs like `targetRepo` could execute arbitrary shell commands.
+**Learning:** `JSON.stringify()` or similar methods are not sufficient to sanitize input for shell execution (like `execSync`) because double quotes in Unix shells still evaluate command substitution (e.g., `$(...)` or backticks).
+**Prevention:** Always strictly use `execFileSync` or `spawnSync` with properly separated argument arrays instead of `execSync` with string interpolation. Note: `execFileSync` is the preferred 1:1 drop-in replacement for `execSync` because it automatically throws an error on non-zero exit codes.
