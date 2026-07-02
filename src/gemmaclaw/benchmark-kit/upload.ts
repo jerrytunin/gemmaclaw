@@ -9,7 +9,7 @@
  *      and opens a PR via the `gh` CLI.
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -150,7 +150,7 @@ function extractQuantization(modelName: string): string | undefined {
  */
 export function checkGhCli(): { available: boolean; authenticated: boolean; error?: string } {
   try {
-    execSync("gh --version", { stdio: "pipe" });
+    execFileSync("gh", ["--version"], { stdio: "pipe" });
   } catch {
     return {
       available: false,
@@ -160,7 +160,7 @@ export function checkGhCli(): { available: boolean; authenticated: boolean; erro
   }
 
   try {
-    execSync("gh auth status", { stdio: "pipe" });
+    execFileSync("gh", ["auth", "status"], { stdio: "pipe" });
     return { available: true, authenticated: true };
   } catch {
     return {
@@ -203,7 +203,7 @@ export async function uploadResult(
   // Step 2: Fork (idempotent).
   print(`Ensuring fork of ${opts.targetRepo}...`);
   try {
-    execSync(`gh repo fork ${opts.targetRepo} --clone=false`, {
+    execFileSync("gh", ["repo", "fork", opts.targetRepo, "--clone=false"], {
       stdio: "pipe",
       timeout: 30_000,
     });
@@ -212,7 +212,7 @@ export async function uploadResult(
   }
 
   // Get the user's GitHub username for the fork.
-  const ghUser = execSync("gh api user --jq .login", { encoding: "utf8", timeout: 10_000 }).trim();
+  const ghUser = execFileSync("gh", ["api", "user", "--jq", ".login"], { encoding: "utf8", timeout: 10_000 }).trim();
   const repoName = opts.targetRepo.split("/")[1];
   const forkRepo = `${ghUser}/${repoName}`;
 
@@ -221,7 +221,7 @@ export async function uploadResult(
   print(`Cloning ${forkRepo} to ${tmpDir}...`);
 
   try {
-    execSync(`gh repo clone ${forkRepo} ${tmpDir} -- --depth 1`, {
+    execFileSync("gh", ["repo", "clone", forkRepo, tmpDir, "--", "--depth", "1"], {
       stdio: "pipe",
       timeout: 60_000,
     });
@@ -233,13 +233,13 @@ export async function uploadResult(
     fs.mkdirSync(resultDir, { recursive: true });
     fs.writeFileSync(path.join(resultDir, resultFileName), JSON.stringify(anon, null, 2));
 
-    execSync(`git checkout -b "${branchName}"`, { cwd: tmpDir, stdio: "pipe" });
-    execSync(`git add "${opts.datasetDir}/${resultFileName}"`, { cwd: tmpDir, stdio: "pipe" });
-    execSync(`git commit -m "benchmark: add result ${anon.runId}"`, { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["checkout", "-b", branchName], { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["add", `${opts.datasetDir}/${resultFileName}`], { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["commit", "-m", `benchmark: add result ${anon.runId}`], { cwd: tmpDir, stdio: "pipe" });
 
     // Step 5: Push and open PR.
     print("Pushing and opening PR...");
-    execSync(`git push origin "${branchName}"`, { cwd: tmpDir, stdio: "pipe", timeout: 60_000 });
+    execFileSync("git", ["push", "origin", branchName], { cwd: tmpDir, stdio: "pipe", timeout: 60_000 });
 
     const prBody = [
       "## Benchmark Result",
@@ -254,8 +254,7 @@ export async function uploadResult(
       "All private identifiers have been stripped.",
     ].join("\n");
 
-    const prUrl = execSync(
-      `gh pr create --repo ${opts.targetRepo} --head "${ghUser}:${branchName}" --title "benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}" --body "${prBody.replace(/"/g, '\\"')}"`,
+    const prUrl = execFileSync("gh", ["pr", "create", "--repo", opts.targetRepo, "--head", `${ghUser}:${branchName}`, "--title", `benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}`, "--body", prBody],
       { cwd: tmpDir, encoding: "utf8", timeout: 30_000 },
     ).trim();
 
