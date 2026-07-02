@@ -1,0 +1,4 @@
+## 2025-07-02 - Command Injection via execSync with String Concatenation
+**Vulnerability:** Node.js `execSync` combined with string concatenation when invoking CLI tools like `git` and `gh` allowed potential command injection vulnerabilities. Input variables like `branchName`, `runId`, or repo paths could contain malicious shell metacharacters that would be evaluated by the underlying shell spawned by `execSync`.
+**Learning:** Using `JSON.stringify()` or simple string interpolation is insufficient and unsafe for sanitizing input for shell execution in Node.js, because standard string interpolation still allows evaluation of shell metacharacters in Unix shells. `execSync` executes the command inside a shell by default.
+**Prevention:** Always use `execFileSync` or `spawnSync` with properly separated argument arrays to bypass the system shell completely and pass arguments directly to the executable, preventing injection attacks.
