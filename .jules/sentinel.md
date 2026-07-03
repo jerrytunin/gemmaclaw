@@ -1,0 +1,4 @@
+## 2024-05-21 - [Fix command injection risk in benchmark submit command]
+**Vulnerability:** User inputs (like branch name, PR title, repo name) were concatenated directly into shell strings and executed via `execSync` in `src/commands/submit-benchmark.ts`. This created a critical command injection risk, as malicious input could run arbitrary shell commands on the system.
+**Learning:** Shell interpolation with `execSync` is inherently risky when dealing with user-controlled variables, even if they seem partially sanitized. The vulnerability was present in multiple places handling git and gh cli commands.
+**Prevention:** Replaced `execSync` with `execFileSync` across the command file. `execFileSync` bypasses the shell entirely and passes arguments directly to the OS, neutralizing command injection attacks. It also eliminates the need for shell-specific escaping like wrapping variables in quotes.
