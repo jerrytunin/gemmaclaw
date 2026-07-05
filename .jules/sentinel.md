@@ -1,0 +1,5 @@
+## 2024-07-05 - Command Injection in benchmark upload
+
+**Vulnerability:** The `gh` and `git` commands in `src/gemmaclaw/benchmark-kit/upload.ts` and `src/commands/submit-benchmark.ts` were executed using `execSync` with string interpolation that included potentially user-controlled variables.
+**Learning:** Using string interpolation with `execSync` allows attackers to execute arbitrary shell commands if the inputs are not strictly sanitized. Even if the variables look safe (e.g., branch names, run IDs), they may contain shell metacharacters. `JSON.stringify()` is not a safe mechanism to sanitize input for shell execution.
+**Prevention:** Always use `execFileSync` or `spawnSync` with properly separated argument arrays instead of string interpolation for external commands like `git` and `gh`.
