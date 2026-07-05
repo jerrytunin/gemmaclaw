@@ -212,7 +212,10 @@ export async function uploadResult(
   }
 
   // Get the user's GitHub username for the fork.
-  const ghUser = execFileSync("gh", ["api", "user", "--jq", ".login"], { encoding: "utf8", timeout: 10_000 }).trim();
+  const ghUser = execFileSync("gh", ["api", "user", "--jq", ".login"], {
+    encoding: "utf8",
+    timeout: 10_000,
+  }).trim();
   const repoName = opts.targetRepo.split("/")[1];
   const forkRepo = `${ghUser}/${repoName}`;
 
@@ -234,12 +237,22 @@ export async function uploadResult(
     fs.writeFileSync(path.join(resultDir, resultFileName), JSON.stringify(anon, null, 2));
 
     execFileSync("git", ["checkout", "-b", branchName], { cwd: tmpDir, stdio: "pipe" });
-    execFileSync("git", ["add", `${opts.datasetDir}/${resultFileName}`], { cwd: tmpDir, stdio: "pipe" });
-    execFileSync("git", ["commit", "-m", `benchmark: add result ${anon.runId}`], { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["add", `${opts.datasetDir}/${resultFileName}`], {
+      cwd: tmpDir,
+      stdio: "pipe",
+    });
+    execFileSync("git", ["commit", "-m", `benchmark: add result ${anon.runId}`], {
+      cwd: tmpDir,
+      stdio: "pipe",
+    });
 
     // Step 5: Push and open PR.
     print("Pushing and opening PR...");
-    execFileSync("git", ["push", "origin", branchName], { cwd: tmpDir, stdio: "pipe", timeout: 60_000 });
+    execFileSync("git", ["push", "origin", branchName], {
+      cwd: tmpDir,
+      stdio: "pipe",
+      timeout: 60_000,
+    });
 
     const prBody = [
       "## Benchmark Result",
@@ -254,13 +267,22 @@ export async function uploadResult(
       "All private identifiers have been stripped.",
     ].join("\n");
 
-    const prUrl = execFileSync("gh", [
-      "pr", "create",
-      "--repo", opts.targetRepo,
-      "--head", `${ghUser}:${branchName}`,
-      "--title", `benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}`,
-      "--body", prBody
-    ], { cwd: tmpDir, encoding: "utf8", timeout: 30_000 }).trim();
+    const prUrl = execFileSync(
+      "gh",
+      [
+        "pr",
+        "create",
+        "--repo",
+        opts.targetRepo,
+        "--head",
+        `${ghUser}:${branchName}`,
+        "--title",
+        `benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}`,
+        "--body",
+        prBody,
+      ],
+      { cwd: tmpDir, encoding: "utf8", timeout: 30_000 },
+    ).trim();
 
     print(`PR opened: ${prUrl}`);
     return prUrl;
