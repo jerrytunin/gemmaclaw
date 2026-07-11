@@ -150,7 +150,7 @@ function extractQuantization(modelName: string): string | undefined {
  */
 export function checkGhCli(): { available: boolean; authenticated: boolean; error?: string } {
   try {
-    execSync("gh --version", { stdio: "pipe" });
+    execFileSync("gh", ["--version"], { stdio: "pipe" });
   } catch {
     return {
       available: false,
@@ -160,7 +160,7 @@ export function checkGhCli(): { available: boolean; authenticated: boolean; erro
   }
 
   try {
-    execSync("gh auth status", { stdio: "pipe" });
+    execFileSync("gh", ["auth", "status"], { stdio: "pipe" });
     return { available: true, authenticated: true };
   } catch {
     return {
