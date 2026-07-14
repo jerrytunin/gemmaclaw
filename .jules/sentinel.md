@@ -1,0 +1,4 @@
+## 2025-01-20 - Command Injection in Benchmark Submit
+**Vulnerability:** The `submit-benchmark.ts` command used `execSync` with unsanitized inputs like branch names and remote repo URLs, allowing for arbitrary command execution.
+**Learning:** Using `JSON.stringify()` or variable interpolation within `execSync` strings does not prevent shell expansion or command injection in Unix environments, as shells can execute commands within backticks or `$()`.
+**Prevention:** Always use `execFileSync` or `spawnSync` with explicitly defined argument arrays to bypass shell evaluation and directly invoke binaries.
