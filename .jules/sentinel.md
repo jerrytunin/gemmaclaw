@@ -1,0 +1,4 @@
+## 2026-07-18 - Command Injection Vulnerability in uploadResult
+**Vulnerability:** Command injection vulnerability in `src/gemmaclaw/benchmark-kit/upload.ts` due to unsanitized external input (branchName and possibly model names/architectures via gh pr create) being interpolated directly into `execSync` commands.
+**Learning:** Using string interpolation with `execSync` is fundamentally insecure when any part of the string comes from external input or computed values like model names. Double quotes around the interpolated variables do not prevent command substitution (e.g. $(...) or backticks) from being executed by the shell.
+**Prevention:** Always use `execFileSync` (or `spawnSync`) with a properly separated array of arguments instead of `execSync` with a single command string. This completely bypasses the shell's parsing and execution of metacharacters and substitutions.
