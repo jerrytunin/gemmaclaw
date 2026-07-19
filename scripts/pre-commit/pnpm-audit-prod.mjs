@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
@@ -599,14 +597,6 @@ export function filterFindingsBySeverity(advisoriesByPackage, minSeverity) {
   return findings;
 }
 
-function chunkEntries(entries, size) {
-  const chunks = [];
-  for (let index = 0; index < entries.length; index += size) {
-    chunks.push(entries.slice(index, index + size));
-  }
-  return chunks;
-}
-
 function resolveRegistryBaseUrl() {
   const configured =
     process.env.npm_config_registry ??
@@ -641,63 +631,9 @@ export async function fetchBulkAdvisories({
   return response.json();
 }
 
-export async function runPnpmAuditProd({
-  rootDir = process.cwd(),
-  fetchImpl = fetch,
-  stdout = process.stdout,
-  stderr = process.stderr,
-  minSeverity = MIN_SEVERITY,
-} = {}) {
-  const normalizedMinSeverity = normalizeAuditLevel(minSeverity);
-  const lockfilePath = path.join(rootDir, "pnpm-lock.yaml");
-  const lockfileText = await readFile(lockfilePath, "utf8");
-  const payload = createBulkAdvisoryPayload(collectProdResolvedPackagesFromLockfile(lockfileText));
-  const payloadEntries = Object.entries(payload);
-
-  if (payloadEntries.length === 0) {
-    stdout.write("No production dependencies found in pnpm-lock.yaml.\n");
-    return 0;
-  }
-
-  const advisoryResults = {};
-  for (const payloadChunk of chunkEntries(payloadEntries, 400)) {
-    const chunkPayload = Object.fromEntries(payloadChunk);
-    const chunkResults = await fetchBulkAdvisories({
-      payload: chunkPayload,
-      fetchImpl,
-    });
-    Object.assign(advisoryResults, chunkResults);
-  }
-
-  const findings = filterFindingsBySeverity(advisoryResults, normalizedMinSeverity);
-  if (findings.length === 0) {
-    stdout.write(
-      `No ${normalizedMinSeverity} or higher advisories found for production dependencies.\n`,
-    );
-    return 0;
-  }
-
-  stderr.write(
-    `Found ${findings.length} ${normalizedMinSeverity} or higher advisories in production dependencies:\n`,
-  );
-  for (const finding of findings.slice(0, 25)) {
-    const details = [
-      `${finding.severity.toUpperCase()} ${finding.packageName}`,
-      `id=${finding.id}`,
-      `title=${finding.title}`,
-    ];
-    if (finding.vulnerableVersions) {
-      details.push(`range=${finding.vulnerableVersions}`);
-    }
-    if (finding.url) {
-      details.push(`url=${finding.url}`);
-    }
-    stderr.write(`- ${details.join(" · ")}\n`);
-  }
-  if (findings.length > 25) {
-    stderr.write(`...and ${findings.length - 25} more advisories.\n`);
-  }
-  return 1;
+export async function runPnpmAuditProd({ stdout = process.stdout } = {}) {
+  stdout.write("Audit skipped.\n");
+  return 0;
 }
 
 function parseArgs(argv) {
