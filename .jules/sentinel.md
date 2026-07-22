@@ -1,0 +1,4 @@
+## 2024-05-24 - [Replace execSync with execFileSync for GH CLI Execution]
+**Vulnerability:** Shell command injection risk. In `src/commands/submit-benchmark.ts`, `execSync` is used with string interpolation for `branchName`, `datasetDir`, `resultFileName`, `runId`, `prTitle` and `prBodyFile` which could allow arbitrary command execution if these variables contain shell metacharacters. Even when quotes or `JSON.stringify` are used, it can be bypassed.
+**Learning:** `JSON.stringify` and double quotes do not provide complete protection against command substitution (`$()`, backticks) in Unix shells. `execSync` executes through a shell by default.
+**Prevention:** Use `execFileSync` (or `spawnSync`) which executes the binary directly without passing through a shell, and pass arguments as an array of strings.
