@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { startBrowserBridgeServer, stopBrowserBridgeServer } from "./bridge-server.js";
 import type { ResolvedBrowserConfig } from "./config.js";
-import { getBrowserTestFetch } from "./test-fetch.js";
 import {
   DEFAULT_OPENCLAW_BROWSER_COLOR,
   DEFAULT_OPENCLAW_BROWSER_PROFILE_NAME,
 } from "./constants.js";
+import { getBrowserTestFetch } from "./test-fetch.js";
 
 function buildResolvedConfig(): ResolvedBrowserConfig {
   return {
