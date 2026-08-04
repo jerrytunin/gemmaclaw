@@ -9,7 +9,7 @@
  *      and opens a PR via the `gh` CLI.
  */
 
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -233,13 +233,23 @@ export async function uploadResult(
     fs.mkdirSync(resultDir, { recursive: true });
     fs.writeFileSync(path.join(resultDir, resultFileName), JSON.stringify(anon, null, 2));
 
-    execSync(`git checkout -b "${branchName}"`, { cwd: tmpDir, stdio: "pipe" });
-    execSync(`git add "${opts.datasetDir}/${resultFileName}"`, { cwd: tmpDir, stdio: "pipe" });
-    execSync(`git commit -m "benchmark: add result ${anon.runId}"`, { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["checkout", "-b", branchName], { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["add", `${opts.datasetDir}/${resultFileName}`], {
+      cwd: tmpDir,
+      stdio: "pipe",
+    });
+    execFileSync("git", ["commit", "-m", `benchmark: add result ${anon.runId}`], {
+      cwd: tmpDir,
+      stdio: "pipe",
+    });
 
     // Step 5: Push and open PR.
     print("Pushing and opening PR...");
-    execSync(`git push origin "${branchName}"`, { cwd: tmpDir, stdio: "pipe", timeout: 60_000 });
+    execFileSync("git", ["push", "origin", branchName], {
+      cwd: tmpDir,
+      stdio: "pipe",
+      timeout: 60_000,
+    });
 
     const prBody = [
       "## Benchmark Result",
@@ -254,8 +264,21 @@ export async function uploadResult(
       "All private identifiers have been stripped.",
     ].join("\n");
 
-    const prUrl = execSync(
-      `gh pr create --repo ${opts.targetRepo} --head "${ghUser}:${branchName}" --title "benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}" --body "${prBody.replace(/"/g, '\\"')}"`,
+    const prTitle = `benchmark: ${anon.model.name} ${anon.summary.percentage}% on ${anon.hardware.cpu.arch}`;
+    const prUrl = execFileSync(
+      "gh",
+      [
+        "pr",
+        "create",
+        "--repo",
+        opts.targetRepo,
+        "--head",
+        `${ghUser}:${branchName}`,
+        "--title",
+        prTitle,
+        "--body",
+        prBody,
+      ],
       { cwd: tmpDir, encoding: "utf8", timeout: 30_000 },
     ).trim();
 
