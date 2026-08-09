@@ -1,0 +1,4 @@
+## 2025-02-14 - Command Injection via JSON.stringify() in Shell Execution
+**Vulnerability:** Command injection in `src/commands/submit-benchmark.ts` via `execSync` using `JSON.stringify()` for argument quoting. Since Unix shells evaluate command substitution (`$(...)` or backticks) inside double quotes, and `JSON.stringify()` outputs double-quoted strings, malicious input from `results.json` (like the model name) could execute arbitrary commands.
+**Learning:** `JSON.stringify()` is not a safe escaping mechanism for shell execution. Shell interpretation must be entirely avoided when passing untrusted data to external binaries.
+**Prevention:** Always use `execFileSync` or `spawnSync` with an array of arguments, which bypasses shell parsing completely, ensuring arguments are passed verbatim to the executable.
