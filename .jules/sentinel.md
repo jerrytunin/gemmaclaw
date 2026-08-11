@@ -1,4 +1,5 @@
 ## 2024-05-18 - Avoid execSync with unsanitized arguments for command execution
+
 **Vulnerability:** Use of `execSync` with unsanitized dynamically constructed strings passed as arguments directly to the shell, causing Command Injection vulnerabilities. Specifically, string interpolation to construct the command in `execSync` is highly prone to malicious argument parsing, or escaping failures when data changes.
 **Learning:** `execSync` interprets the entire command string through a shell (like `cmd.exe` or `/bin/sh`). In Node.js, `JSON.stringify()` does NOT provide safe sanitization against command substitution (like `$()` or backticks).
 **Prevention:** Instead of `execSync`, `execFileSync` should be used with strict separation of the executable command from an array of its arguments, avoiding any shell interpolation and direct shell execution altogether. Ensure correct importing of `execFileSync`.
