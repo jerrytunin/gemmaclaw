@@ -87,7 +87,7 @@ export async function startBrowserBridgeServer(params: {
   if (params.resolveSandboxNoVncToken) {
     app.get("/sandbox/novnc", (req, res) => {
       if (!hasVerifiedBrowserAuth(req)) {
-        res.status(401).send("Unauthorized");
+        res.status(401).json({ error: "Unauthorized" });
         return;
       }
       res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
@@ -96,12 +96,12 @@ export async function startBrowserBridgeServer(params: {
       res.setHeader("Referrer-Policy", "no-referrer");
       const rawToken = normalizeOptionalString(req.query?.token);
       if (!rawToken) {
-        res.status(400).send("Missing token");
+        res.status(400).json({ error: "Missing token" });
         return;
       }
       const resolved = params.resolveSandboxNoVncToken?.(rawToken);
       if (!resolved) {
-        res.status(404).send("Invalid or expired token");
+        res.status(404).json({ error: "Invalid or expired token" });
         return;
       }
       res.type("html").status(200).send(buildNoVncBootstrapHtml(resolved));
