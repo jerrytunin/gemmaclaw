@@ -1,4 +1,5 @@
 ## 2024-05-18 - Prevent Command Injection with execFileSync
+
 **Vulnerability:** Use of `execSync` with unsanitized string interpolation to execute shell commands creates a command injection risk.
 **Learning:** `execSync` passes the entire command string to a shell, making it vulnerable to injection if any part of the string is derived from untrusted input. `execFileSync` avoids this by passing arguments directly to the executable without shell parsing. The executable must be strictly separated from its arguments into an array. Using JSON.stringify() or shell-specific escaping is not a safe mechanism to sanitize input for shell execution (like `execSync`). Double quotes in Unix shells still evaluate command substitution (e.g., `$(...)` or backticks).
 **Prevention:** Always strictly use `execFileSync` (or `spawnSync` if explicitly checking `.status`) with properly separated argument arrays instead of `execSync` with string interpolation. Shell-specific escaping (such as manually escaping double quotes for string interpolation) is no longer necessary and should be removed.
