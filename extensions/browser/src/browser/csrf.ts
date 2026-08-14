@@ -79,7 +79,7 @@ export function browserMutationGuardMiddleware(): (
         secFetchSite,
       })
     ) {
-      res.status(403).send("Forbidden");
+      res.status(403).json({ error: "Forbidden" });
       return;
     }
 

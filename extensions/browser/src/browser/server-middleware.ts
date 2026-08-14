@@ -47,6 +47,6 @@ export function installBrowserAuthMiddleware(
       markVerifiedBrowserAuth(req);
       return next();
     }
-    res.status(401).send("Unauthorized");
+    res.status(401).json({ error: "Unauthorized" });
   });
 }
