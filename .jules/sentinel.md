@@ -1,0 +1,4 @@
+## 2024-05-24 - Command Injection via execSync with gh pr create
+**Vulnerability:** The codebase uses `execSync` to run `gh pr create` with string interpolation that includes potentially user-controlled or complex strings like `prTitle` and `prBody`. This is vulnerable to command injection or at least shell misinterpretation since string variables are expanded by the shell if they contain backticks, `$()`, or specific quotes.
+**Learning:** `execSync` passes the entire command string to a shell by default, meaning any unescaped or improperly escaped strings injected into the command can cause unintended shell execution or syntax errors.
+**Prevention:** Always use `execFileSync` or `spawnSync` with an array of arguments, strictly separating the executable from its arguments so that no shell parsing occurs on the variables.
