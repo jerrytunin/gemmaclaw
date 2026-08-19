@@ -1,0 +1,4 @@
+## 2024-10-24 - Prevent Command Injection with execFileSync
+**Vulnerability:** Command injection risk via unsanitized input to shell commands using `execSync` with string interpolation. In particular, `gh pr create --body "${prBody}"` allows code execution if `prBody` contains unescaped command substitution tokens (like `$()`).
+**Learning:** Using `JSON.stringify` or manually escaping double quotes is not a safe mechanism to sanitize input for `execSync`. Node.js evaluates these directly inside the underlying shell. `execFileSync` should be used instead.
+**Prevention:** Always prefer executing external commands using `execFileSync` with properly separated argument arrays instead of string interpolation with `execSync`. When migrating to `execFileSync`, remove shell-specific escapes like `replace(/"/g, '\\"')`.
