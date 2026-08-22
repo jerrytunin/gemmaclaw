@@ -7,7 +7,7 @@
  * core-model and agent-family pipelines.
  */
 
-import { execSync, spawnSync } from "node:child_process";
+import { execSync, spawnSync, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -298,12 +298,15 @@ export async function submitBenchmarkCommand(
   // Fork (idempotent).
   runtime.log(`Ensuring fork of ${targetRepo}...`);
   try {
-    execSync(`gh repo fork ${targetRepo} --clone=false`, { stdio: "pipe", timeout: 30_000 });
+    execFileSync("gh", ["repo", "fork", targetRepo, "--clone=false"], {
+      stdio: "pipe",
+      timeout: 30_000,
+    });
   } catch {
     // Fork already exists, that's fine.
   }
 
-  const ghUser = execSync("gh api user --jq .login", {
+  const ghUser = execFileSync("gh", ["api", "user", "--jq", ".login"], {
     encoding: "utf8",
     timeout: 10_000,
   }).trim();
@@ -313,38 +316,44 @@ export async function submitBenchmarkCommand(
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "gemmaclaw-submit-"));
   runtime.log(`Cloning ${forkRepo} to ${tmpDir}...`);
   try {
-    execSync(`gh repo clone ${forkRepo} ${tmpDir} -- --depth 1`, {
+    execFileSync("gh", ["repo", "clone", forkRepo, tmpDir, "--", "--depth", "1"], {
       stdio: "pipe",
       timeout: 60_000,
     });
     // Sync default branch with upstream so PR doesn't include unrelated drift.
-    execSync(`git remote add upstream https://github.com/${targetRepo}.git`, {
+    execFileSync("git", ["remote", "add", "upstream", `https://github.com/${targetRepo}.git`], {
       cwd: tmpDir,
       stdio: "pipe",
     });
-    execSync("git fetch upstream", { cwd: tmpDir, stdio: "pipe", timeout: 60_000 });
-    const defaultBranch = execSync("git symbolic-ref --short HEAD", {
+    execFileSync("git", ["fetch", "upstream"], { cwd: tmpDir, stdio: "pipe", timeout: 60_000 });
+    const defaultBranch = execFileSync("git", ["symbolic-ref", "--short", "HEAD"], {
       cwd: tmpDir,
       encoding: "utf8",
     }).trim();
     try {
-      execSync(`git reset --hard upstream/${defaultBranch}`, { cwd: tmpDir, stdio: "pipe" });
+      execFileSync("git", ["reset", "--hard", `upstream/${defaultBranch}`], {
+        cwd: tmpDir,
+        stdio: "pipe",
+      });
     } catch {
       // If upstream branch differs in name, fall back to upstream/main.
-      execSync("git reset --hard upstream/main", { cwd: tmpDir, stdio: "pipe" });
+      execFileSync("git", ["reset", "--hard", "upstream/main"], { cwd: tmpDir, stdio: "pipe" });
     }
 
-    execSync(`git checkout -b "${branchName}"`, { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["checkout", "-b", branchName], { cwd: tmpDir, stdio: "pipe" });
 
     const targetSubDir = path.join(tmpDir, datasetDir);
     fs.mkdirSync(targetSubDir, { recursive: true });
     fs.writeFileSync(path.join(targetSubDir, resultFileName), JSON.stringify(anonymized, null, 2));
 
-    execSync(`git add "${datasetDir}/${resultFileName}"`, { cwd: tmpDir, stdio: "pipe" });
-    execSync(`git commit -m "benchmark: add result ${runId}"`, { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["add", `${datasetDir}/${resultFileName}`], { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["commit", "-m", `benchmark: add result ${runId}`], {
+      cwd: tmpDir,
+      stdio: "pipe",
+    });
 
     runtime.log("Pushing branch and opening PR...");
-    execSync(`git push --force-with-lease origin "${branchName}"`, {
+    execFileSync("git", ["push", "--force-with-lease", "origin", branchName], {
       cwd: tmpDir,
       stdio: "pipe",
       timeout: 60_000,
@@ -352,8 +361,20 @@ export async function submitBenchmarkCommand(
 
     const prBodyFile = path.join(tmpDir, ".pr-body.md");
     fs.writeFileSync(prBodyFile, prBody);
-    const prUrl = execSync(
-      `gh pr create --repo ${targetRepo} --head "${ghUser}:${branchName}" --title ${JSON.stringify(prTitle)} --body-file ${JSON.stringify(prBodyFile)}`,
+    const prUrl = execFileSync(
+      "gh",
+      [
+        "pr",
+        "create",
+        "--repo",
+        targetRepo,
+        "--head",
+        `${ghUser}:${branchName}`,
+        "--title",
+        prTitle,
+        "--body-file",
+        prBodyFile,
+      ],
       { cwd: tmpDir, encoding: "utf8", timeout: 30_000 },
     ).trim();
 
