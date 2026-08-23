@@ -1,4 +1,5 @@
 ## 2024-05-24 - Command Injection via execSync with execFileSync Migration
+
 **Vulnerability:** Shell command injection risk due to string interpolation in `execSync` commands calling external CLIs like `gh` and `git` with unvalidated options. Passing the full command string as a single argument to `execFileSync` causes ENOENT errors, as Node.js treats the whole string as the executable path.
 **Learning:** `execFileSync` requires strict separation between the command name and the array of its arguments. Shell string evaluation does not apply to `execFileSync`, thus double quotes added specifically for shell argument grouping (e.g. `"${branchName}"`) become literal parts of the argument which breaks git/gh commands.
 **Prevention:** When converting `execSync(cmd + args)` to `execFileSync(cmd, [args])`, manually extract the exact tool (e.g., `git`, `gh`) as the first parameter, pass all subsequent flags and variables inside an array as the second parameter, and strip out any manually added shell quotes from variables.
