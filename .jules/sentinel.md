@@ -1,0 +1,4 @@
+## 2024-05-15 - [Critical] Command Injection via execSync with string interpolation
+**Vulnerability:** Several scripts like `submit-benchmark.ts`, `benchmark-gemma.ts`, and `upload.ts` used `execSync` with string interpolation (e.g. ``execSync(`gh repo fork ${targetRepo} --clone=false`)``). This allowed arbitrary shell command injection if any of the interpolated variables contained shell metacharacters or quotes.
+**Learning:** Using `execSync` with string interpolation evaluates commands via the shell, creating critical command injection vulnerabilities. `JSON.stringify()` or simple string replacements are not sufficient sanitization.
+**Prevention:** Always use `execFileSync` (or `spawnSync`) passing the executable as the first argument and an array of arguments. This bypasses shell execution and passes parameters directly to the executable, eliminating command injection risks.
