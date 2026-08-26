@@ -1,0 +1,4 @@
+## 2025-05-24 - Migrate execSync to execFileSync for Command Injection Prevention
+**Vulnerability:** Use of `execSync` with string interpolation/concatenation allows for potential command injection vulnerabilities, especially when dealing with user inputs or external data in command construction.
+**Learning:** `execFileSync` should be used instead of `execSync`. It prevents command injection by taking an array of arguments, thereby bypassing the shell parsing that can be manipulated by unescaped characters in string templates. Escaping strings like using JSON.stringify for execSync is not safe enough in the Unix shell context.
+**Prevention:** Always strictly use `execFileSync` (or `spawnSync`) with properly separated argument arrays. Ensure executable tools are explicitly defined as the first argument, and arguments follow as an array.
