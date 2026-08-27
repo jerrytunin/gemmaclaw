@@ -298,7 +298,10 @@ export async function submitBenchmarkCommand(
   // Fork (idempotent).
   runtime.log(`Ensuring fork of ${targetRepo}...`);
   try {
-    execFileSync("gh", ["repo", "fork", targetRepo, "--clone=false"], { stdio: "pipe", timeout: 30_000 });
+    execFileSync("gh", ["repo", "fork", targetRepo, "--clone=false"], {
+      stdio: "pipe",
+      timeout: 30_000,
+    });
   } catch {
     // Fork already exists, that's fine.
   }
@@ -328,7 +331,10 @@ export async function submitBenchmarkCommand(
       encoding: "utf8",
     }).trim();
     try {
-      execFileSync("git", ["reset", "--hard", `upstream/${defaultBranch}`], { cwd: tmpDir, stdio: "pipe" });
+      execFileSync("git", ["reset", "--hard", `upstream/${defaultBranch}`], {
+        cwd: tmpDir,
+        stdio: "pipe",
+      });
     } catch {
       // If upstream branch differs in name, fall back to upstream/main.
       execFileSync("git", ["reset", "--hard", "upstream/main"], { cwd: tmpDir, stdio: "pipe" });
@@ -341,7 +347,10 @@ export async function submitBenchmarkCommand(
     fs.writeFileSync(path.join(targetSubDir, resultFileName), JSON.stringify(anonymized, null, 2));
 
     execFileSync("git", ["add", `${datasetDir}/${resultFileName}`], { cwd: tmpDir, stdio: "pipe" });
-    execFileSync("git", ["commit", "-m", `benchmark: add result ${runId}`], { cwd: tmpDir, stdio: "pipe" });
+    execFileSync("git", ["commit", "-m", `benchmark: add result ${runId}`], {
+      cwd: tmpDir,
+      stdio: "pipe",
+    });
 
     runtime.log("Pushing branch and opening PR...");
     execFileSync("git", ["push", "--force-with-lease", "origin", branchName], {
@@ -355,11 +364,16 @@ export async function submitBenchmarkCommand(
     const prUrl = execFileSync(
       "gh",
       [
-        "pr", "create",
-        "--repo", targetRepo,
-        "--head", `${ghUser}:${branchName}`,
-        "--title", prTitle,
-        "--body-file", prBodyFile
+        "pr",
+        "create",
+        "--repo",
+        targetRepo,
+        "--head",
+        `${ghUser}:${branchName}`,
+        "--title",
+        prTitle,
+        "--body-file",
+        prBodyFile,
       ],
       { cwd: tmpDir, encoding: "utf8", timeout: 30_000 },
     ).trim();
