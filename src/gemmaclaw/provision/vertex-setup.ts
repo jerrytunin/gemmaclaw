@@ -14,7 +14,7 @@
  *   gemmaclaw setup --vertex --project my-project --region us-central1
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline/promises";
@@ -61,7 +61,7 @@ export const VERTEX_GEMMA_MODELS = [
 /** Check if gcloud CLI is available. */
 export function isGcloudInstalled(): boolean {
   try {
-    execSync("gcloud --version", { stdio: "pipe", timeout: 5_000 });
+    execFileSync("gcloud", ["--version"], { stdio: "pipe", timeout: 5_000 });
     return true;
   } catch {
     return false;
@@ -72,7 +72,7 @@ export function isGcloudInstalled(): boolean {
 export function getGcloudProject(): string | null {
   try {
     return (
-      execSync("gcloud config get-value project", {
+      execFileSync("gcloud", ["config", "get-value", "project"], {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
         timeout: 5_000,
@@ -87,7 +87,7 @@ export function getGcloudProject(): string | null {
 export function getGcloudAccessToken(): string | null {
   try {
     return (
-      execSync("gcloud auth application-default print-access-token", {
+      execFileSync("gcloud", ["auth", "application-default", "print-access-token"], {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
         timeout: 10_000,
@@ -265,8 +265,12 @@ export async function interactiveVertexSetup(opts?: {
     // Service accounts: use gcloud with the key file, or exchange JWT manually
     try {
       accessToken =
-        execSync(
-          `gcloud auth print-access-token --impersonate-service-account=$(python3 -c "import json; print(json.load(open('${saKeyPath}'))['client_email'])")`,
+        execFileSync(
+          "bash",
+          [
+            "-c",
+            `gcloud auth print-access-token --impersonate-service-account=$(python3 -c "import json; print(json.load(open('${saKeyPath}'))['client_email'])")`,
+          ],
           { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"], timeout: 15_000 },
         ).trim() || null;
     } catch {

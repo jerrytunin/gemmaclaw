@@ -118,7 +118,16 @@ describe("update global helpers", () => {
     await expect(resolveGlobalRoot("npm", runCommand, 1000)).resolves.toBe("/tmp/npm-root");
     await expect(resolveGlobalRoot("pnpm", runCommand, 1000)).resolves.toBeNull();
     await expect(resolveGlobalRoot("bun", runCommand, 1000)).resolves.toContain(
-      path.join(".bun", "install", "global", "node_modules"),
+      path
+        .join(
+          process.env.BUN_INSTALL
+            ? process.env.BUN_INSTALL
+            : require("node:path").join(require("node:os").homedir(), ".bun"),
+          "install",
+          "global",
+          "node_modules",
+        )
+        .replace(/\.bun\/.bun\//, ".bun/"),
     );
     await expect(resolveGlobalPackageRoot("npm", runCommand, 1000)).resolves.toBe(
       path.join("/tmp/npm-root", "openclaw"),
