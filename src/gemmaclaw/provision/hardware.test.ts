@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock child_process and fs before importing the module.
 vi.mock("node:child_process", () => ({
-  execSync: vi.fn(),
+  execFileSync: vi.fn(),
 }));
 
 vi.mock("node:fs", () => ({
@@ -21,7 +21,7 @@ vi.mock("node:os", () => ({
   freemem: vi.fn(),
 }));
 
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import {
@@ -31,7 +31,7 @@ import {
   type HardwareInfo,
 } from "./hardware.js";
 
-const mockExecSync = vi.mocked(execSync);
+const mockExecSync = vi.mocked(execFileSync);
 const mockExistsSync = vi.mocked(fs.existsSync);
 const mockCpus = vi.mocked(os.cpus);
 const mockTotalmem = vi.mocked(os.totalmem);
@@ -108,11 +108,11 @@ describe("detectHardware", () => {
     mockExistsSync.mockImplementation((p) => {
       return p === "/dev/nvidia0";
     });
-    mockExecSync.mockImplementation((cmd) => {
-      if (cmd.includes("--query-gpu")) {
+    mockExecSync.mockImplementation((cmd, args) => {
+      if (args && args.some((a) => a.includes("--query-gpu"))) {
         return "NVIDIA RTX 3090, 24576\n";
       }
-      if (cmd.includes("which nvidia-smi")) {
+      if (cmd === "which" && args?.[0] === "nvidia-smi") {
         return "/usr/bin/nvidia-smi\n";
       }
       throw new Error("not found");
@@ -136,8 +136,8 @@ describe("detectHardware", () => {
       }
       return false;
     });
-    mockExecSync.mockImplementation((cmd) => {
-      if (cmd.includes("--query-gpu")) {
+    mockExecSync.mockImplementation((cmd, args) => {
+      if (args && args.some((a) => a.includes("--query-gpu"))) {
         return "NVIDIA GeForce RTX 3090, 24576\n";
       }
       // 'which nvidia-smi' fails (not on PATH)
@@ -191,8 +191,8 @@ describe("detectSystemTools", () => {
   });
 
   it("detects ollama when which ollama succeeds", () => {
-    mockExecSync.mockImplementation((cmd) => {
-      if (cmd === "which ollama") {
+    mockExecSync.mockImplementation((cmd, args) => {
+      if (cmd === "which" && args?.[0] === "ollama") {
         return "/usr/local/bin/ollama\n";
       }
       throw new Error("not found");
@@ -203,14 +203,14 @@ describe("detectSystemTools", () => {
   });
 
   it("detects build tools for gemma.cpp", () => {
-    mockExecSync.mockImplementation((cmd) => {
-      if (cmd === "which cmake") {
+    mockExecSync.mockImplementation((cmd, args) => {
+      if (cmd === "which" && args?.[0] === "cmake") {
         return "/usr/bin/cmake\n";
       }
-      if (cmd === "which g++") {
+      if (cmd === "which" && args?.[0] === "g++") {
         return "/usr/bin/g++\n";
       }
-      if (cmd === "which git") {
+      if (cmd === "which" && args?.[0] === "git") {
         return "/usr/bin/git\n";
       }
       throw new Error("not found");

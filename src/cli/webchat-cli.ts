@@ -1,4 +1,4 @@
-import { execSync, spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -151,7 +151,7 @@ function resolveCliEntryPath(): string {
 
 function killProcessesOnPort(port: number): void {
   try {
-    const pids = execSync(`lsof -ti :${port}`, {
+    const pids = execFileSync("lsof", ["-ti", `:${port}`], {
       encoding: "utf-8",
       timeout: 5_000,
       stdio: "pipe",
@@ -164,7 +164,7 @@ function killProcessesOnPort(port: number): void {
           // Already gone.
         }
       }
-      execSync("sleep 1", { stdio: "pipe" });
+      execFileSync("sleep", ["1"], { stdio: "pipe" });
       for (const pid of pids.split("\n").filter(Boolean)) {
         try {
           process.kill(Number(pid), "SIGKILL");

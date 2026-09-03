@@ -1,9 +1,9 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { parseGeminiAuth } from "./gemini-auth.js";
 
 vi.mock("node:child_process", () => ({
-  execSync: vi.fn(),
+  execFileSync: vi.fn(),
 }));
 
 describe("parseGeminiAuth", () => {
@@ -21,12 +21,13 @@ describe("parseGeminiAuth", () => {
   });
 
   it("resolves token via gcloud for gcp-vertex-credentials marker", () => {
-    vi.mocked(execSync).mockReturnValue("mocked-token\n" as any);
+    vi.mocked(execFileSync).mockReturnValue("mocked-token\n" as any);
 
     const result = parseGeminiAuth("gcp-vertex-credentials");
 
-    expect(execSync).toHaveBeenCalledWith(
-      "gcloud auth application-default print-access-token",
+    expect(execFileSync).toHaveBeenCalledWith(
+      "gcloud",
+      ["auth", "application-default", "print-access-token"],
       expect.any(Object),
     );
     expect(result.headers.Authorization).toBe("Bearer mocked-token");
@@ -34,7 +35,7 @@ describe("parseGeminiAuth", () => {
   });
 
   it("fails loudly when gcloud automated credentials cannot resolve a token", () => {
-    vi.mocked(execSync).mockImplementation(() => {
+    vi.mocked(execFileSync).mockImplementation(() => {
       throw new Error("gcloud failed");
     });
 

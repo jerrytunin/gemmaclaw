@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 
 /**
  * Shared Gemini authentication utilities.
@@ -32,7 +32,7 @@ export function parseGeminiAuth(apiKey: string): { headers: Record<string, strin
 
   if (apiKey === GCP_VERTEX_CREDENTIALS_MARKER) {
     try {
-      const token = execSync("gcloud auth application-default print-access-token", {
+      const token = execFileSync("gcloud", ["auth", "application-default", "print-access-token"], {
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
       }).trim();
