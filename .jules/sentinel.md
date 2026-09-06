@@ -1,0 +1,4 @@
+## 2025-05-18 - Prevent Command Injection with execSync
+**Vulnerability:** Found uses of `execSync` with template literal string interpolation for command execution (e.g. `execSync("gh pr create --title " + JSON.stringify(prTitle))`) in benchmark tools. While `JSON.stringify` may add quotes, it still leaves arguments vulnerable to shell execution attacks if quotes are bypassed or if they're evaluated by the shell (`$(...)`).
+**Learning:** `JSON.stringify()` is not a safe mechanism to sanitize input for shell execution. Double quotes in Unix shells still evaluate command substitution.
+**Prevention:** Use `execFileSync` (or `spawnSync`) instead of `execSync`, passing the executable strictly separate from its arguments in an array. This disables shell parsing entirely and avoids the need for shell string escaping.
