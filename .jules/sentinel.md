@@ -1,0 +1,4 @@
+## 2024-05-18 - Command Injection via execSync with User Input
+**Vulnerability:** `execSync` is used in `src/commands/submit-benchmark.ts` and `src/commands/benchmark-gemma.ts` where potentially untrusted string inputs (like branch names, repo URLs, file paths) are passed directly using string interpolation (e.g. `` execSync(`git checkout -b "${branchName}"`) ``).
+**Learning:** Node.js `execSync` relies on shell execution which is susceptible to command injection if double quotes or backticks appear in arguments. Stringify-ing arguments or escaping double quotes does not fully prevent command substitution. `execFileSync` should be strictly used with arguments explicitly separated in an array.
+**Prevention:** Always migrate `execSync` to `execFileSync` and pass the command separated from its arguments using an array. Never rely on shell string parsing when constructing commands.
