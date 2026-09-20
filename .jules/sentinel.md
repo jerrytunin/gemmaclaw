@@ -1,0 +1,4 @@
+## 2024-05-28 - Command Injection via execSync with String Interpolation
+**Vulnerability:** Command injection vulnerability in `src/gemmaclaw/benchmark-kit/upload.ts` due to using `execSync` with template literals containing untrusted, unsanitized inputs (`anon.model.name` and potentially others) to construct a `gh pr create` command.
+**Learning:** Even internal CLI wrappers using `execSync` are vulnerable when handling dynamic content. Manual string escaping (like `prBody.replace(/"/g, '\\"')`) is fragile and insufficient. Node.js evaluates strings in `execSync` inside a shell, increasing risk.
+**Prevention:** Always use `execFileSync` or `spawnSync` with an array of arguments (e.g., `['pr', 'create', '--title', ...]`) to explicitly separate the executable from its parameters and avoid shell evaluation entirely.
