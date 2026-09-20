@@ -48,10 +48,12 @@ describe("startBrowserBridgeServer auth", () => {
     });
     servers.push({ stop: () => stopBrowserBridgeServer(bridge.server) });
 
-    const unauth = await getBrowserTestFetch()(`${bridge.baseUrl}/`);
+    const unauth = await (getBrowserTestFetch() as unknown as typeof fetch)(`${bridge.baseUrl}/`);
     expect(unauth.status).toBe(401);
 
-    const authed = await getBrowserTestFetch()(`${bridge.baseUrl}/`, { headers });
+    const authed = await (getBrowserTestFetch() as unknown as typeof fetch)(`${bridge.baseUrl}/`, {
+      headers,
+    });
     expect(authed.status).toBe(200);
   }
 
@@ -98,13 +100,18 @@ describe("startBrowserBridgeServer auth", () => {
     });
     servers.push({ stop: () => stopBrowserBridgeServer(bridge.server) });
 
-    const unauth = await getBrowserTestFetch()(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`);
+    const unauth = await (getBrowserTestFetch() as unknown as typeof fetch)(
+      `${bridge.baseUrl}/sandbox/novnc?token=valid-token`,
+    );
     expect(unauth.status).toBe(401);
     expect(resolveCalls).toBe(0);
 
-    const res = await getBrowserTestFetch()(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`, {
-      headers: { Authorization: "Bearer secret-token" },
-    });
+    const res = await (getBrowserTestFetch() as unknown as typeof fetch)(
+      `${bridge.baseUrl}/sandbox/novnc?token=valid-token`,
+      {
+        headers: { Authorization: "Bearer secret-token" },
+      },
+    );
     expect(res.status).toBe(200);
     expect(resolveCalls).toBe(1);
     expect(res.headers.get("location")).toBeNull();
