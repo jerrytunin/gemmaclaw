@@ -10,6 +10,7 @@ import { createBrowserRouteApp, createBrowserRouteResponse } from "./test-helper
 afterEach(() => {
   vi.clearAllMocks();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("browser tab routes attachOnly loopback profiles", () => {
