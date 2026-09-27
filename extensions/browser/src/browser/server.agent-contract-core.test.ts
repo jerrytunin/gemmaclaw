@@ -434,6 +434,7 @@ describe("profile CRUD endpoints", () => {
 
   afterEach(async () => {
     await cleanupBrowserControlServerTestContext();
+    vi.unstubAllGlobals();
   });
 
   it("validates profile create/delete endpoints", async () => {
