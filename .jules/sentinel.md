@@ -1,4 +1,5 @@
 ## 2024-05-30 - Command Injection via execSync with User Input
+
 **Vulnerability:** The codebase was using `execSync` with template literals (e.g., ``execSync(`git commit -m "benchmark: add result ${runId}"`)``) where some inputs could potentially come from unvalidated paths or user inputs, leading to shell injection risks.
 **Learning:** Using `JSON.stringify()` or simple string interpolation is insufficient to sanitize inputs for shell execution. Even if variables seem controlled, unexpected shell expansions or crafted variables can still cause arbitrary command execution.
 **Prevention:** Always use `execFileSync` or `spawnSync` and separate the command from its arguments into an array. This avoids the shell intermediate and directly passes the arguments to the executable, preventing injection entirely.
