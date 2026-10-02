@@ -43,15 +43,16 @@ describe("startBrowserBridgeServer auth", () => {
   ) {
     const bridge = await startBrowserBridgeServer({
       resolved: buildResolvedConfig(),
+      resolveSandboxNoVncToken: () => null,
       ...authConfig,
     });
     servers.push({ stop: () => stopBrowserBridgeServer(bridge.server) });
 
-    const unauth = await fetch(`${bridge.baseUrl}/`);
+    const unauth = await fetch(`${bridge.baseUrl}/sandbox/novnc`);
     expect(unauth.status).toBe(401);
 
-    const authed = await fetch(`${bridge.baseUrl}/`, { headers });
-    expect(authed.status).toBe(200);
+    const authed = await fetch(`${bridge.baseUrl}/sandbox/novnc`, { headers });
+    expect(authed.status).toBe(400); // 400 because token is missing, but auth passed
   }
 
   afterEach(async () => {
