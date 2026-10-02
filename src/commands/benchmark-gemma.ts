@@ -1,4 +1,4 @@
-import { execSync, spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { BackendType } from "../gemmaclaw/benchmark/runner.js";
@@ -49,7 +49,7 @@ const DOCKER_IMAGE = "gemmaclaw-benchmark";
 
 function isDockerAvailable(): boolean {
   try {
-    execSync("docker info", { stdio: "pipe", timeout: 10_000 });
+    execFileSync("docker", ["info"], { stdio: "pipe", timeout: 10_000 });
     return true;
   } catch {
     return false;
@@ -70,7 +70,7 @@ function findRepoRoot(): string {
 function dockerBuild(repoRoot: string, runtime: RuntimeEnv): boolean {
   runtime.log("Building Docker image (this may take a while on first run)...");
   try {
-    execSync(`docker build -f Dockerfile.benchmark -t ${DOCKER_IMAGE} .`, {
+    execFileSync("docker", ["build", "-f", "Dockerfile.benchmark", "-t", DOCKER_IMAGE, "."], {
       cwd: repoRoot,
       stdio: "inherit",
       timeout: 600_000,
@@ -433,7 +433,7 @@ export async function benchmarkSandboxCommand(
 
   let containerId: string;
   try {
-    containerId = execSync(`docker ${createArgs.join(" ")}`, {
+    containerId = execFileSync("docker", createArgs, {
       cwd: repoRoot,
       timeout: 30_000,
       encoding: "utf-8",
@@ -449,14 +449,14 @@ export async function benchmarkSandboxCommand(
   const shortId = containerId.slice(0, 12);
 
   try {
-    execSync(`docker cp "${filePath}" ${containerId}:${containerFile}`, {
+    execFileSync("docker", ["cp", filePath, `${containerId}:${containerFile}`], {
       timeout: 30_000,
     });
   } catch (err) {
     runtime.error(
       `Failed to copy file into container: ${err instanceof Error ? err.message : String(err)}`,
     );
-    execSync(`docker rm ${containerId}`, { stdio: "pipe" }).toString();
+    execFileSync("docker", ["rm", containerId], { stdio: "pipe" }).toString();
     runtime.exit(1);
     return;
   }

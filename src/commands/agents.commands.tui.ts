@@ -1,4 +1,4 @@
-import { execSync, spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
@@ -296,7 +296,7 @@ async function isLoopbackPortOccupied(port: number): Promise<boolean> {
  */
 export function findProcessesOnPort(port: number): string[] {
   try {
-    const pids = execSync(`lsof -ti :${port}`, {
+    const pids = execFileSync("lsof", ["-ti", `:${port}`], {
       encoding: "utf-8",
       stdio: "pipe",
       timeout: 5_000,
