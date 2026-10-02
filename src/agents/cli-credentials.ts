@@ -1,4 +1,4 @@
-import { execFileSync, execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -97,7 +97,7 @@ type CodexCliWriteOptions = CodexCliFileOptions & {
   writeFile?: (credentials: OAuthCredentials, options?: CodexCliFileOptions) => boolean;
 };
 
-type ExecSyncFn = typeof execSync;
+type ExecSyncFn = typeof execFileSync;
 type ExecFileSyncFn = typeof execFileSync;
 
 function resolveClaudeCliCredentialsPath(homeDir?: string) {
@@ -210,7 +210,7 @@ function resolveCodexKeychainParams(options?: {
 }) {
   return {
     platform: options?.platform ?? process.platform,
-    execSyncImpl: options?.execSync ?? execSync,
+    execSyncImpl: options?.execSync ?? execFileSync,
     codexHome: resolveCodexHomePath(options?.codexHome),
   };
 }
@@ -244,7 +244,8 @@ function readCodexKeychainAuthRecord(options?: {
 
   try {
     const secret = execSyncImpl(
-      `security find-generic-password -s "Codex Auth" -a "${account}" -w`,
+      "security",
+      ["find-generic-password", "-s", "Codex Auth", "-a", account, "-w"],
       {
         encoding: "utf8",
         timeout: 5000,
@@ -349,11 +350,12 @@ function readMiniMaxCliCredentials(options?: { homeDir?: string }): MiniMaxCliCr
 }
 
 function readClaudeCliKeychainCredentials(
-  execSyncImpl: ExecSyncFn = execSync,
+  execSyncImpl: ExecSyncFn = execFileSync,
 ): ClaudeCliCredential | null {
   try {
     const result = execSyncImpl(
-      `security find-generic-password -s "${CLAUDE_CLI_KEYCHAIN_SERVICE}" -w`,
+      "security",
+      ["find-generic-password", "-s", CLAUDE_CLI_KEYCHAIN_SERVICE, "-w"],
       { encoding: "utf8", timeout: 5000, stdio: ["pipe", "pipe", "pipe"] },
     );
 
