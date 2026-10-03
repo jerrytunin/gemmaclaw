@@ -41,16 +41,19 @@ describe("startBrowserBridgeServer auth", () => {
     authConfig: { authToken?: string; authPassword?: string },
     headers: Record<string, string>,
   ) {
+    const { getBrowserTestFetch } = await import("./test-fetch.js");
+    const realFetch = getBrowserTestFetch();
+
     const bridge = await startBrowserBridgeServer({
       resolved: buildResolvedConfig(),
       ...authConfig,
     });
     servers.push({ stop: () => stopBrowserBridgeServer(bridge.server) });
 
-    const unauth = await fetch(`${bridge.baseUrl}/`);
+    const unauth = await realFetch(`${bridge.baseUrl}/`);
     expect(unauth.status).toBe(401);
 
-    const authed = await fetch(`${bridge.baseUrl}/`, { headers });
+    const authed = await realFetch(`${bridge.baseUrl}/`, { headers });
     expect(authed.status).toBe(200);
   }
 
@@ -83,6 +86,9 @@ describe("startBrowserBridgeServer auth", () => {
   });
 
   it("serves noVNC bootstrap html without leaking password in Location header", async () => {
+    const { getBrowserTestFetch } = await import("./test-fetch.js");
+    const realFetch = getBrowserTestFetch();
+
     let resolveCalls = 0;
     const bridge = await startBrowserBridgeServer({
       resolved: buildResolvedConfig(),
@@ -97,11 +103,11 @@ describe("startBrowserBridgeServer auth", () => {
     });
     servers.push({ stop: () => stopBrowserBridgeServer(bridge.server) });
 
-    const unauth = await fetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`);
+    const unauth = await realFetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`);
     expect(unauth.status).toBe(401);
     expect(resolveCalls).toBe(0);
 
-    const res = await fetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`, {
+    const res = await realFetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`, {
       headers: { Authorization: "Bearer secret-token" },
     });
     expect(res.status).toBe(200);
