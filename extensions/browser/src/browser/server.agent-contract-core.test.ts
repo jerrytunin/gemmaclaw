@@ -387,9 +387,7 @@ describe("browser control server", () => {
   it("POST /tabs/open?profile=unknown returns 404", async () => {
     await startBrowserControlServerFromConfig();
     const base = getBrowserControlServerBaseUrl();
-    const realFetch = getBrowserTestFetch();
-
-    const result = await realFetch(`${base}/tabs/open?profile=unknown`, {
+    const result = await getBrowserTestFetch()(`${base}/tabs/open?profile=unknown`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: "https://example.com" }),
@@ -403,9 +401,7 @@ describe("browser control server", () => {
     setBrowserControlServerReachable(true);
     await startBrowserControlServerFromConfig();
     const base = getBrowserControlServerBaseUrl();
-    const realFetch = getBrowserTestFetch();
-
-    const result = await realFetch(`${base}/tabs/open`, {
+    const result = await getBrowserTestFetch()(`${base}/tabs/open`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: "not a url" }),
