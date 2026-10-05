@@ -427,6 +427,9 @@ describe("profile CRUD endpoints", () => {
         if (u.includes("/json/list")) {
           return makeResponse([]);
         }
+        if (u.includes("profiles") || u.includes("tabs/open")) {
+          return getBrowserTestFetch()(url);
+        }
         return makeResponse({}, { ok: false, status: 500, text: "unexpected" });
       }),
     );
