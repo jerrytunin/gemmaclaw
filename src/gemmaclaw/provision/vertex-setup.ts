@@ -14,7 +14,7 @@
  *   gemmaclaw setup --vertex --project my-project --region us-central1
  */
 
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline/promises";
@@ -265,8 +265,13 @@ export async function interactiveVertexSetup(opts?: {
     // Service accounts: use gcloud with the key file, or exchange JWT manually
     try {
       accessToken =
-        execSync(
-          `gcloud auth print-access-token --impersonate-service-account=$(python3 -c "import json; print(json.load(open('${saKeyPath}'))['client_email'])")`,
+        execFileSync(
+          "gcloud",
+          [
+            "auth",
+            "print-access-token",
+            `--impersonate-service-account=${JSON.parse(fs.readFileSync(saKeyPath, "utf-8")).client_email}`,
+          ],
           { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"], timeout: 15_000 },
         ).trim() || null;
     } catch {
