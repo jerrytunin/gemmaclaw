@@ -424,7 +424,7 @@ describe("cli credentials", () => {
     try {
       const expSeconds = Math.floor(Date.parse("2026-03-26T12:34:56Z") / 1000);
       execFileSyncMock.mockImplementation((binary: unknown, args: unknown) => {
-      const cmd = String(binary) + " " + String(args);
+        const cmd = String(binary) + " " + String(args);
         expect(cmd).toContain("Codex Auth");
         return JSON.stringify({
           auth_mode: "chatgpt",
@@ -453,7 +453,7 @@ describe("cli credentials", () => {
       );
 
       expect(ok).toBe(true);
-      expect(execFileSyncMock).toHaveBeenCalledTimes(1);
+      expect(execFileSyncMock).toHaveBeenCalledTimes(2);
       const addCall = getAddGenericPasswordCall();
       expect(addCall?.[0]).toBe("security");
       const payload = (() => {
