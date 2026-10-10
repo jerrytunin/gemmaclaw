@@ -1,4 +1,4 @@
-import { execFileSync, execSync, spawn, type ChildProcess } from "node:child_process";
+import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -198,7 +198,7 @@ async function waitForGatewayReady(port: number): Promise<boolean> {
 
 function killProcessesOnPort(port: number): void {
   try {
-    const pids = execSync(`lsof -ti :${port}`, {
+    const pids = execFileSync("lsof", ["-ti", `:${port}`], {
       encoding: "utf-8",
       timeout: 5_000,
       stdio: "pipe",
@@ -212,7 +212,7 @@ function killProcessesOnPort(port: number): void {
         }
       }
       // Give processes a moment to exit.
-      execSync("sleep 1", { stdio: "pipe" });
+      execFileSync("sleep", ["1"], { stdio: "pipe" });
       // Force kill any that survived.
       for (const pid of pids.split("\n").filter(Boolean)) {
         try {
@@ -255,7 +255,7 @@ function spawnGatewayDetached(port: number): ChildProcess {
 
 function isDockerInstalled(): boolean {
   try {
-    execSync("docker --version", { stdio: "pipe", timeout: 5_000 });
+    execFileSync("docker", ["--version"], { stdio: "pipe", timeout: 5_000 });
     return true;
   } catch {
     return false;
@@ -264,7 +264,7 @@ function isDockerInstalled(): boolean {
 
 function isDockerRunning(): boolean {
   try {
-    execSync("docker info", { stdio: "pipe", timeout: 10_000 });
+    execFileSync("docker", ["info"], { stdio: "pipe", timeout: 10_000 });
     return true;
   } catch {
     return false;
