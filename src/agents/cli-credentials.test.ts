@@ -249,7 +249,7 @@ describe("cli credentials", () => {
     const accountHash = "cli|";
 
     execFileSyncMock.mockImplementation((binary: unknown, args: unknown) => {
-      const cmd = String(binary) + " " + String(args);
+      const cmd = String(binary) + " " + (Array.isArray(args) ? args.join(" ") : String(args));
       expect(cmd).toContain("Codex Auth");
       expect(cmd).toContain(accountHash);
       return JSON.stringify({
@@ -424,7 +424,7 @@ describe("cli credentials", () => {
     try {
       const expSeconds = Math.floor(Date.parse("2026-03-26T12:34:56Z") / 1000);
       execFileSyncMock.mockImplementation((binary: unknown, args: unknown) => {
-        const cmd = String(binary) + " " + String(args);
+        const cmd = String(binary) + " " + (Array.isArray(args) ? args.join(" ") : String(args));
         expect(cmd).toContain("Codex Auth");
         return JSON.stringify({
           auth_mode: "chatgpt",
