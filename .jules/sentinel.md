@@ -1,0 +1,4 @@
+## 2025-05-18 - Prevent Command Injection via execSync with Shell Formatting
+**Vulnerability:** In `src/gemmaclaw/benchmark-kit/upload.ts`, `execSync` is used to create a PR via `gh pr create` where the `--body` argument is string interpolated with `prBody`. If `prBody` contains unescaped command substitution like `$()` or backticks, the shell evaluates it because `execSync` runs in a shell.
+**Learning:** Using `JSON.stringify()` or basic `.replace(/"/g, '\\"')` is not a safe mechanism to sanitize input for shell execution (like `execSync`). Double quotes in Unix shells still evaluate command substitution (e.g., `$(...)` or backticks). Always strictly use `execFileSync` or `spawnSync` with properly separated argument arrays.
+**Prevention:** Always use `execFileSync` instead of `execSync` when dealing with potentially untrusted or complex input arguments. Pass the executable name and an array of arguments to avoid shell parsing vulnerabilities.
