@@ -4,7 +4,7 @@ type FetchLike = ((input: string | URL, init?: RequestInit) => Promise<Response>
   mock?: unknown;
 };
 
-export type BrowserTestFetch = (input: string | URL, init?: RequestInit) => Promise<Response>;
+export type BrowserTestFetch = typeof fetch;
 
 function isUsableFetch(value: unknown): value is FetchLike {
   return typeof value === "function" && !("mock" in (value as FetchLike));
@@ -21,10 +21,12 @@ export function getBrowserTestFetch(): BrowserTestFetch {
   }
   const { fetch } = require("undici") as typeof import("undici");
   if (isUsableFetch(fetch)) {
-    return (input, init) => fetch(input, init);
+    // @ts-expect-error mock cast
+    return (input, init) => fetch(input as unknown, init as unknown) as unknown as Promise<Response>;
   }
   if (isUsableFetch(globalThis.fetch)) {
-    return (input, init) => globalThis.fetch(input, init);
+    // @ts-expect-error mock cast
+    return (input, init) => globalThis.fetch(input as unknown, init as unknown) as unknown as Promise<Response>;
   }
   throw new TypeError("fetch is not a function");
 }
