@@ -4,7 +4,7 @@ type FetchLike = ((input: string | URL, init?: RequestInit) => Promise<Response>
   mock?: unknown;
 };
 
-export type BrowserTestFetch = (input: string | URL, init?: RequestInit) => Promise<Response>;
+export type BrowserTestFetch = (input: string | URL, init?: any) => Promise<Response>;
 
 function isUsableFetch(value: unknown): value is FetchLike {
   return typeof value === "function" && !("mock" in (value as FetchLike));
