@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { startBrowserBridgeServer, stopBrowserBridgeServer } from "./bridge-server.js";
+import { getBrowserTestFetch } from "./test-fetch.js";
 import type { ResolvedBrowserConfig } from "./config.js";
 import {
   DEFAULT_OPENCLAW_BROWSER_COLOR,
@@ -47,10 +48,11 @@ describe("startBrowserBridgeServer auth", () => {
     });
     servers.push({ stop: () => stopBrowserBridgeServer(bridge.server) });
 
-    const unauth = await fetch(`${bridge.baseUrl}/`);
+    const realFetch = getBrowserTestFetch();
+    const unauth = await realFetch(`${bridge.baseUrl}/profiles`, { method: "GET" });
     expect(unauth.status).toBe(401);
 
-    const authed = await fetch(`${bridge.baseUrl}/`, { headers });
+    const authed = await realFetch(`${bridge.baseUrl}/profiles`, { headers, method: "GET" });
     expect(authed.status).toBe(200);
   }
 
@@ -97,11 +99,12 @@ describe("startBrowserBridgeServer auth", () => {
     });
     servers.push({ stop: () => stopBrowserBridgeServer(bridge.server) });
 
-    const unauth = await fetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`);
+    const realFetch = getBrowserTestFetch();
+    const unauth = await realFetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`);
     expect(unauth.status).toBe(401);
     expect(resolveCalls).toBe(0);
 
-    const res = await fetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`, {
+    const res = await realFetch(`${bridge.baseUrl}/sandbox/novnc?token=valid-token`, {
       headers: { Authorization: "Bearer secret-token" },
     });
     expect(res.status).toBe(200);

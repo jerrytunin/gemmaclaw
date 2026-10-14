@@ -424,8 +424,11 @@ describe("profile CRUD endpoints", () => {
       "fetch",
       vi.fn(async (url: string) => {
         const u = url;
-        if (u.includes("/json/list")) {
+        if (u.includes("/json/list") || u.includes("/json/version")) {
           return makeResponse([]);
+        }
+        if (u.includes("/json/new")) {
+          return makeResponse({ webSocketDebuggerUrl: "ws://127.0.0.1/devtools/page/abcd1234" });
         }
         return makeResponse({}, { ok: false, status: 500, text: "unexpected" });
       }),
