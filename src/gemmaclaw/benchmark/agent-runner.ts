@@ -18,7 +18,7 @@
  *   - Can target remote gemmaclaw instances via URL config
  */
 
-import { execSync, spawn } from "node:child_process";
+import { execFileSync, execSync, spawn } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
@@ -738,7 +738,7 @@ export function seedMockGog(seedScript?: string, stateDir?: string): void {
   }
   const env: Record<string, string> = { ...process.env } as Record<string, string>;
   env.GEMMACLAW_MOCK_GOG_STATE_DIR = stateDir;
-  execSync(`python3 ${script}`, { stdio: "inherit", env });
+  execFileSync("python3", [script], { stdio: "inherit", env });
 }
 
 function benchmarkSeedStateDir(config: AgentBenchmarkConfig): string {
