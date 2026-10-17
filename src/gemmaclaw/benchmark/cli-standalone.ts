@@ -24,7 +24,7 @@
  *   pnpm benchmark agent --gemmaclaw-enhancements default # Opt into runtime prompt enhancements
  */
 
-import { execSync, spawn, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -348,11 +348,15 @@ async function runAgentModeInDocker(opts: Record<string, string | boolean>): Pro
 
   const dockerBuildTimeoutMs = resolveAgentBenchmarkDockerBuildTimeoutMs();
   console.log(`Docker build timeout: ${Math.round(dockerBuildTimeoutMs / 1000)}s`);
-  execSync(`docker build -f Dockerfile.benchmark -t ${AGENT_BENCHMARK_DOCKER_IMAGE} .`, {
-    cwd: repoRoot,
-    stdio: "inherit",
-    timeout: dockerBuildTimeoutMs,
-  });
+  execFileSync(
+    "docker",
+    ["build", "-f", "Dockerfile.benchmark", "-t", AGENT_BENCHMARK_DOCKER_IMAGE, "."],
+    {
+      cwd: repoRoot,
+      stdio: "inherit",
+      timeout: dockerBuildTimeoutMs,
+    },
+  );
 
   for (let index = 0; index < selectedTaskIds.length; index++) {
     const taskId = selectedTaskIds[index];
