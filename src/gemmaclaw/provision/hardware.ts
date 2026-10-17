@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 
@@ -85,7 +85,7 @@ function detectGpu(): HardwareInfo["gpu"] {
 
 function queryAppleSiliconChip(): string | null {
   try {
-    const output = execSync("sysctl -n machdep.cpu.brand_string", {
+    const output = execFileSync("sysctl", ["-n", "machdep.cpu.brand_string"], {
       timeout: 3_000,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
@@ -118,7 +118,7 @@ function isWsl2(): boolean {
 function findNvidiaSmi(): string | null {
   // Standard PATH lookup first.
   try {
-    const p = execSync("which nvidia-smi", {
+    const p = execFileSync("which", ["nvidia-smi"], {
       timeout: 3_000,
       encoding: "utf-8",
       stdio: "pipe",
@@ -146,8 +146,9 @@ function queryNvidiaSmi(): { name: string; vramMb?: number } | null {
     return null;
   }
   try {
-    const output = execSync(
-      `"${smiPath}" --query-gpu=name,memory.total --format=csv,noheader,nounits`,
+    const output = execFileSync(
+      smiPath,
+      ["--query-gpu=name,memory.total", "--format=csv,noheader,nounits"],
       { timeout: 5_000, encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
     ).trim();
     if (!output) {
@@ -180,7 +181,7 @@ export function detectSystemTools(): SystemTools {
 
 function whichSync(cmd: string): string | undefined {
   try {
-    const result = execSync(`which ${cmd}`, {
+    const result = execFileSync("which", [cmd], {
       timeout: 3_000,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
