@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DEFAULT_AI_SNAPSHOT_MAX_CHARS } from "./constants.js";
 import {
   installAgentContractHooks,
@@ -12,7 +12,6 @@ import {
   getBrowserControlServerTestState,
   getCdpMocks,
   getPwMocks,
-  makeResponse,
   resetBrowserControlServerTestContext,
   setBrowserControlServerEvaluateEnabled,
   setBrowserControlServerProfiles,
@@ -420,16 +419,7 @@ describe("profile CRUD endpoints", () => {
   beforeEach(async () => {
     await resetBrowserControlServerTestContext();
 
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (url: string) => {
-        const u = url;
-        if (u.includes("/json/list")) {
-          return makeResponse([]);
-        }
-        return makeResponse({}, { ok: false, status: 500, text: "unexpected" });
-      }),
-    );
+    /* Removed global fetch stub */
   });
 
   afterEach(async () => {
