@@ -1,0 +1,4 @@
+## 2024-05-27 - Command Injection via `execSync`
+**Vulnerability:** Shell command injection risks from unescaped dynamic arguments passed into `execSync`, `spawnSync`, or similar methods.
+**Learning:** `execSync(commandStr)` executes within a shell, which interpolates shell variables and command substitutions, leading to injection if `commandStr` contains untrusted inputs like IDs, file names, or commit messages. Using `JSON.stringify` on a string or replacing quotes doesn't fix it completely as `$()` and `\`` will still evaluate.
+**Prevention:** Always prefer `execFileSync(cmd, [args])` which executes the binary directly without shell interpolation. If `execSync` is absolutely needed, strictly sanitize the input to allow only specific safe formats, and avoid shell meta-characters. `JSON.stringify` does not make things shell-safe.
