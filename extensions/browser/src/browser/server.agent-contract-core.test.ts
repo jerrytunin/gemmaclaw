@@ -403,9 +403,9 @@ describe("browser control server", () => {
     setBrowserControlServerReachable(true);
     await startBrowserControlServerFromConfig();
     const base = getBrowserControlServerBaseUrl();
-    const realFetch = getBrowserTestFetch();
+    const testFetch = getBrowserTestFetch();
 
-    const result = await realFetch(`${base}/tabs/open`, {
+    const result = await testFetch(`${base}/tabs/open`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: "not a url" }),
@@ -439,9 +439,9 @@ describe("profile CRUD endpoints", () => {
   it("validates profile create/delete endpoints", async () => {
     await startBrowserControlServerFromConfig();
     const base = getBrowserControlServerBaseUrl();
-    const realFetch = getBrowserTestFetch();
+    const testFetch = getBrowserTestFetch();
 
-    const createMissingName = await realFetch(`${base}/profiles/create`, {
+    const createMissingName = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
@@ -450,7 +450,7 @@ describe("profile CRUD endpoints", () => {
     const createMissingNameBody = (await createMissingName.json()) as { error: string };
     expect(createMissingNameBody.error).toContain("name is required");
 
-    const createInvalidName = await realFetch(`${base}/profiles/create`, {
+    const createInvalidName = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "Invalid Name!" }),
@@ -459,7 +459,7 @@ describe("profile CRUD endpoints", () => {
     const createInvalidNameBody = (await createInvalidName.json()) as { error: string };
     expect(createInvalidNameBody.error).toContain("invalid profile name");
 
-    const createDuplicate = await realFetch(`${base}/profiles/create`, {
+    const createDuplicate = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "openclaw" }),
@@ -468,7 +468,7 @@ describe("profile CRUD endpoints", () => {
     const createDuplicateBody = (await createDuplicate.json()) as { error: string };
     expect(createDuplicateBody.error).toContain("already exists");
 
-    const createRemote = await realFetch(`${base}/profiles/create`, {
+    const createRemote = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "remote", cdpUrl: "http://10.0.0.42:9222" }),
@@ -483,7 +483,7 @@ describe("profile CRUD endpoints", () => {
     expect(createRemoteBody.cdpUrl).toBe("http://10.0.0.42:9222");
     expect(createRemoteBody.isRemote).toBe(true);
 
-    const createBadRemote = await realFetch(`${base}/profiles/create`, {
+    const createBadRemote = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "badremote", cdpUrl: "ftp://bad" }),
@@ -492,7 +492,7 @@ describe("profile CRUD endpoints", () => {
     const createBadRemoteBody = (await createBadRemote.json()) as { error: string };
     expect(createBadRemoteBody.error).toContain("cdpUrl");
 
-    const createClawd = await realFetch(`${base}/profiles/create`, {
+    const createClawd = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "legacyclawd", driver: "clawd" }),
@@ -511,7 +511,7 @@ describe("profile CRUD endpoints", () => {
 
     const explicitUserDataDir = "/tmp/openclaw-brave-profile";
     await fs.promises.mkdir(explicitUserDataDir, { recursive: true });
-    const createExistingSession = await realFetch(`${base}/profiles/create`, {
+    const createExistingSession = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -530,7 +530,7 @@ describe("profile CRUD endpoints", () => {
     expect(createExistingSessionBody.transport).toBe("chrome-mcp");
     expect(createExistingSessionBody.userDataDir).toBe(explicitUserDataDir);
 
-    const createBadExistingSession = await realFetch(`${base}/profiles/create`, {
+    const createBadExistingSession = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -544,7 +544,7 @@ describe("profile CRUD endpoints", () => {
     };
     expect(createBadExistingSessionBody.error).toContain("driver=existing-session is required");
 
-    const createLegacyDriver = await realFetch(`${base}/profiles/create`, {
+    const createLegacyDriver = await testFetch(`${base}/profiles/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "legacy", driver: "extension" }),
@@ -553,21 +553,21 @@ describe("profile CRUD endpoints", () => {
     const createLegacyDriverBody = (await createLegacyDriver.json()) as { error: string };
     expect(createLegacyDriverBody.error).toContain('unsupported profile driver "extension"');
 
-    const deleteMissing = await realFetch(`${base}/profiles/nonexistent`, {
+    const deleteMissing = await testFetch(`${base}/profiles/nonexistent`, {
       method: "DELETE",
     });
     expect(deleteMissing.status).toBe(404);
     const deleteMissingBody = (await deleteMissing.json()) as { error: string };
     expect(deleteMissingBody.error).toContain("not found");
 
-    const deleteDefault = await realFetch(`${base}/profiles/openclaw`, {
+    const deleteDefault = await testFetch(`${base}/profiles/openclaw`, {
       method: "DELETE",
     });
     expect(deleteDefault.status).toBe(400);
     const deleteDefaultBody = (await deleteDefault.json()) as { error: string };
     expect(deleteDefaultBody.error).toContain("cannot delete the default profile");
 
-    const deleteInvalid = await realFetch(`${base}/profiles/Invalid-Name!`, {
+    const deleteInvalid = await testFetch(`${base}/profiles/Invalid-Name!`, {
       method: "DELETE",
     });
     expect(deleteInvalid.status).toBe(400);
