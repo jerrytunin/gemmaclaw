@@ -1,0 +1,4 @@
+## 2024-05-15 - Improper Subprocess Argument Handling
+**Vulnerability:** Use of \`execSync\` with interpolated strings allowed for unintended shell execution, particularly in \`src/gemmaclaw/benchmark-kit/upload.ts\` and \`src/commands/submit-benchmark.ts\` when creating branches, executing git commands, and creating PRs. For example, \`gh pr create --repo \${targetRepo} ...\` could be exploited if \`targetRepo\` or other strings contained shell metacharacters.
+**Learning:** Shell command substitution inside string interpolation (e.g. \`execSync(\`gh pr create ...\`)\`) parses arguments through a shell which makes it vulnerable to injection. Also passing the full string as the first argument to \`execFileSync\` will fail with ENOENT.
+**Prevention:** Use \`execFileSync\` instead of \`execSync\`, passing the executable and arguments explicitly as an array to avoid shell evaluation. (e.g. \`execFileSync('gh', ['pr', 'create', '--repo', targetRepo, ...])\`).
