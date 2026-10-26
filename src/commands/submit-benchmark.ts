@@ -7,7 +7,7 @@
  * core-model and agent-family pipelines.
  */
 
-import { execSync, spawnSync } from "node:child_process";
+import { execSync, spawnSync, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -352,8 +352,20 @@ export async function submitBenchmarkCommand(
 
     const prBodyFile = path.join(tmpDir, ".pr-body.md");
     fs.writeFileSync(prBodyFile, prBody);
-    const prUrl = execSync(
-      `gh pr create --repo ${targetRepo} --head "${ghUser}:${branchName}" --title ${JSON.stringify(prTitle)} --body-file ${JSON.stringify(prBodyFile)}`,
+    const prUrl = execFileSync(
+      "gh",
+      [
+        "pr",
+        "create",
+        "--repo",
+        targetRepo,
+        "--head",
+        `${ghUser}:${branchName}`,
+        "--title",
+        prTitle,
+        "--body-file",
+        prBodyFile,
+      ],
       { cwd: tmpDir, encoding: "utf8", timeout: 30_000 },
     ).trim();
 
