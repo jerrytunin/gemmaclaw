@@ -1,4 +1,4 @@
-import { execSync, spawn } from "node:child_process";
+import { execFileSync, execSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import type { BackendType } from "../gemmaclaw/benchmark/runner.js";
@@ -449,14 +449,14 @@ export async function benchmarkSandboxCommand(
   const shortId = containerId.slice(0, 12);
 
   try {
-    execSync(`docker cp "${filePath}" ${containerId}:${containerFile}`, {
+    execFileSync("docker", ["cp", filePath, `${containerId}:${containerFile}`], {
       timeout: 30_000,
     });
   } catch (err) {
     runtime.error(
       `Failed to copy file into container: ${err instanceof Error ? err.message : String(err)}`,
     );
-    execSync(`docker rm ${containerId}`, { stdio: "pipe" }).toString();
+    execFileSync("docker", ["rm", containerId], { stdio: "pipe" }).toString();
     runtime.exit(1);
     return;
   }

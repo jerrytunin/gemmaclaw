@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 
@@ -180,7 +180,7 @@ export function detectSystemTools(): SystemTools {
 
 function whichSync(cmd: string): string | undefined {
   try {
-    const result = execSync(`which ${cmd}`, {
+    const result = execFileSync("which", [cmd], {
       timeout: 3_000,
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"],
