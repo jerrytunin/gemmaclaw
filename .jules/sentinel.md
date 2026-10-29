@@ -1,0 +1,4 @@
+## 2025-02-14 - Improper Subprocess Argument Handling
+**Vulnerability:** Improper subprocess argument handling by using string interpolation/concatenation with `execSync` across multiple files (`src/gemmaclaw/benchmark-kit/upload.ts`, `src/commands/submit-benchmark.ts`, `src/commands/benchmark-gemma.ts`, `src/gemmaclaw/benchmark/agent-runner.ts`, `src/gemmaclaw/provision/hardware.ts`). This allows potential shell injection if variables contain shell metacharacters.
+**Learning:** `execSync` evaluates commands through a shell, exposing applications to injection risks when inputs are dynamically interpolated. `execFileSync` avoids the shell altogether, preventing these risks while providing the same synchronous capability and I/O handling.
+**Prevention:** Replace `execSync` with `execFileSync` where commands process external or interpolated variables. Ensure all executable commands are passed as separate argument arrays.
